@@ -1,18 +1,18 @@
-// In-memory seed data for MicroFin OS.
+// In-memory seed data for NovaFleet.
 // Non-ASCII glyphs are written as \u escapes so the source stays pure ASCII.
 
 const PESO = "₱"; // peso sign
 const MDASH = "—"; // em dash
 
 export const employees = [
-  { id: "EMP-1042", name: "Maria Santos", department: "Human Resources", role: "HR Business Partner", status: "Active", hireDate: "Mar 14, 2021", email: "maria.santos@microfin.io", phone: "+63 917 402 1188", dob: "Feb 9, 1990", address: "Quezon City, NCR", manager: "Rosa Villanueva", employmentType: "Full-time" },
-  { id: "EMP-1058", name: "James Cruz", department: "Finance", role: "Senior Accountant", status: "Active", hireDate: "Jul 1, 2020", email: "james.cruz@microfin.io", phone: "+63 918 220 4471", dob: "Nov 2, 1988", address: "Makati City, NCR", manager: "Elena Ferrer", employmentType: "Full-time" },
-  { id: "EMP-1071", name: "Angela Reyes", department: "Client Services", role: "Loan Officer", status: "Active", hireDate: "Jan 10, 2022", email: "angela.reyes@microfin.io", phone: "+63 906 331 9902", dob: "May 21, 1994", address: "Cebu City, Cebu", manager: "Rosa Villanueva", employmentType: "Full-time" },
-  { id: "EMP-1033", name: "Daniel Tan", department: "IT", role: "Systems Administrator", status: "Active", hireDate: "Nov 20, 2019", email: "daniel.tan@microfin.io", phone: "+63 915 774 0092", dob: "Aug 30, 1986", address: "Pasig City, NCR", manager: "Elena Ferrer", employmentType: "Full-time" },
-  { id: "EMP-1104", name: "Sofia Delacruz", department: "Human Resources", role: "Recruitment Specialist", status: "On Leave", hireDate: "May 2, 2023", email: "sofia.delacruz@microfin.io", phone: "+63 927 118 4420", dob: "Jan 15, 1997", address: "Davao City, Davao", manager: "Maria Santos", employmentType: "Full-time" },
-  { id: "EMP-1089", name: "Miguel Ortiz", department: "Fleet & Transportation", role: "Dispatch Coordinator", status: "Active", hireDate: "Sep 15, 2021", email: "miguel.ortiz@microfin.io", phone: "+63 933 552 6613", dob: "Jun 4, 1992", address: "Iloilo City, Iloilo", manager: "Rosa Villanueva", employmentType: "Full-time" },
-  { id: "EMP-1015", name: "Patricia Lim", department: "Facilities", role: "Facilities Manager", status: "Active", hireDate: "Feb 28, 2018", email: "patricia.lim@microfin.io", phone: "+63 908 991 2270", dob: "Oct 12, 1983", address: "Baguio City, Benguet", manager: "Elena Ferrer", employmentType: "Full-time" },
-  { id: "EMP-1067", name: "Carlos Bautista", department: "Supply Chain", role: "Procurement Officer", status: "Inactive", hireDate: "Dec 5, 2020", email: "carlos.bautista@microfin.io", phone: "+63 919 004 5581", dob: "Mar 27, 1991", address: "Cagayan de Oro, Misamis Oriental", manager: "Maria Santos", employmentType: "Contractual" },
+  { id: "EMP-1042", name: "Maria Santos", department: "Human Resources", role: "HR Business Partner", status: "Active", hireDate: "Mar 14, 2021", email: "maria.santos@novafleet.local", phone: "+63 917 402 1188", dob: "Feb 9, 1990", address: "Quezon City, NCR", manager: "Rosa Villanueva", employmentType: "Full-time" },
+  { id: "EMP-1058", name: "James Cruz", department: "Finance", role: "Senior Accountant", status: "Active", hireDate: "Jul 1, 2020", email: "james.cruz@novafleet.local", phone: "+63 918 220 4471", dob: "Nov 2, 1988", address: "Makati City, NCR", manager: "Elena Ferrer", employmentType: "Full-time" },
+  { id: "EMP-1071", name: "Angela Reyes", department: "Client Services", role: "Loan Officer", status: "Active", hireDate: "Jan 10, 2022", email: "angela.reyes@novafleet.local", phone: "+63 906 331 9902", dob: "May 21, 1994", address: "Cebu City, Cebu", manager: "Rosa Villanueva", employmentType: "Full-time" },
+  { id: "EMP-1033", name: "Daniel Tan", department: "IT", role: "Systems Administrator", status: "Active", hireDate: "Nov 20, 2019", email: "daniel.tan@novafleet.local", phone: "+63 915 774 0092", dob: "Aug 30, 1986", address: "Pasig City, NCR", manager: "Elena Ferrer", employmentType: "Full-time" },
+  { id: "EMP-1104", name: "Sofia Delacruz", department: "Human Resources", role: "Recruitment Specialist", status: "On Leave", hireDate: "May 2, 2023", email: "sofia.delacruz@novafleet.local", phone: "+63 927 118 4420", dob: "Jan 15, 1997", address: "Davao City, Davao", manager: "Maria Santos", employmentType: "Full-time" },
+  { id: "EMP-1089", name: "Miguel Ortiz", department: "Fleet & Transportation", role: "Dispatch Coordinator", status: "Active", hireDate: "Sep 15, 2021", email: "miguel.ortiz@novafleet.local", phone: "+63 933 552 6613", dob: "Jun 4, 1992", address: "Iloilo City, Iloilo", manager: "Rosa Villanueva", employmentType: "Full-time" },
+  { id: "EMP-1015", name: "Patricia Lim", department: "Facilities", role: "Facilities Manager", status: "Active", hireDate: "Feb 28, 2018", email: "patricia.lim@novafleet.local", phone: "+63 908 991 2270", dob: "Oct 12, 1983", address: "Baguio City, Benguet", manager: "Elena Ferrer", employmentType: "Full-time" },
+  { id: "EMP-1067", name: "Carlos Bautista", department: "Supply Chain", role: "Procurement Officer", status: "Inactive", hireDate: "Dec 5, 2020", email: "carlos.bautista@novafleet.local", phone: "+63 919 004 5581", dob: "Mar 27, 1991", address: "Cagayan de Oro, Misamis Oriental", manager: "Maria Santos", employmentType: "Contractual" },
 ];
 
 export const modules = [

@@ -1,51 +1,39 @@
-# MicroFin OS
+# NovaFleet
 
-Microfinance operations dashboard rebuilt from the UI template as a real app.
+Fleet monitoring and transportation management for microfinance field operations.
 
-- **Frontend:** React + Vite (plain JS)
-- **Backend:** Node.js + Express (in-memory data + REST API)
+## Frontend
 
-## Screens
+- React + Vite
+- React Router routes
+- Centralized mock data for starter screens
+- Reusable dashboard layout, sidebar, topbar, cards, tables, badges, and form controls
 
-- **Login** — demo credentials pre-filled; any non-empty credentials sign in.
-- **Overview (Dashboard)** — animated KPI counters, disbursement bar chart, recent activity, loan portfolio by branch.
-- **Human Resources**
-  - Employee Records — sortable-looking table of employees.
-  - Employee Profile — personal + employment info, onboarding checklist.
-  - New Hire Onboarding — 3-step wizard (Personal Info → Job Details → Review) that POSTs a new employee to the API.
-- **Placeholder modules** — Financial Management, Supply Chain, Fleet, Facilities, Client Services, Institutional Oversight (scaffolded "coming soon").
+## Starter Routes
 
-## Run it
+- `/login`
+- `/dashboard`
+- `/live-fleet`
+- `/vehicles`
+- `/drivers`
+- `/trips`
+- `/route-deviations`
+- `/risk-monitoring`
+- `/devices`
+- `/maintenance`
+- `/reports`
+- `/settings`
 
-Two terminals (or run the backend in the background):
+## Run It
 
 ```bash
-# 1. API server  ->  http://localhost:4000
-cd server
-npm install
-npm start
-
-# 2. Web client  ->  http://localhost:5173  (proxies /api to :4000)
 cd client
 npm install
 npm run dev
 ```
 
-Open http://localhost:5173 and click **Sign in**.
+Open the local Vite URL shown in the terminal and sign in with any non-empty email and password. Authentication is a temporary frontend-only mock while the real backend is not connected.
 
-## API
+## Notes
 
-| Method | Path                  | Description                          |
-|--------|-----------------------|--------------------------------------|
-| POST   | `/api/login`          | Demo auth, returns a user object     |
-| GET    | `/api/modules`        | Sidebar navigation tree              |
-| GET    | `/api/reference`      | Departments + employment types       |
-| GET    | `/api/dashboard`      | KPI targets, chart, branches, activity |
-| GET    | `/api/employees`      | Employee list                        |
-| GET    | `/api/employees/:id`  | One employee + onboarding tasks      |
-| POST   | `/api/employees`      | Create a new hire                    |
-
-## Mobile
-
-The stack targets React Native + Expo for mobile as well. The Express API here is
-shared; a future `mobile/` Expo client would consume the same endpoints.
+The current pages use mock records from `src/data/mockData.js`. The service layer in `src/services/` is ready to use `import.meta.env.VITE_API_URL` when backend endpoints are available.

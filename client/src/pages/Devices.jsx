@@ -1,0 +1,16 @@
+import { useCallback, useEffect, useState } from "react";
+import Button from "../components/Button.jsx";
+import DeviceModal from "../components/devices/DeviceModal.jsx";
+import StatusBadge from "../components/StatusBadge.jsx";
+import { createDevice, getDevices, getDeviceVehicles, removeDevice, subscribeToDevices, updateDevice } from "../services/deviceService.js";
+import TablePage from "./TablePage.jsx";
+const formatLastSeen=(value)=>value?new Intl.DateTimeFormat(undefined,{dateStyle:"medium",timeStyle:"short"}).format(new Date(value)):"Never";
+export default function Devices(){
+ const[devices,setDevices]=useState([]),[vehicles,setVehicles]=useState([]),[loading,setLoading]=useState(true),[error,setError]=useState(""),[modalError,setModalError]=useState(""),[modal,setModal]=useState(null),[busy,setBusy]=useState(false);
+ const load=useCallback(async()=>{setLoading(true);setError("");try{const[d,v]=await Promise.all([getDevices(),getDeviceVehicles()]);setDevices(d);setVehicles(v)}catch(e){setError(e.message||"Unable to retrieve IoT devices.")}finally{setLoading(false)}},[]);
+ useEffect(()=>{load();return subscribeToDevices(load)},[load]);
+ const save=async(values)=>{setBusy(true);setModalError("");try{if(modal.mode==="edit")await updateDevice(modal.device.id,values);else await createDevice(values);setModal(null);await load()}catch(e){setModalError(e.message||"Unable to save this device.")}finally{setBusy(false)}};
+ const remove=async()=>{if(!window.confirm(`Remove ${modal.device.name}? This action cannot be undone.`))return;setBusy(true);setModalError("");try{await removeDevice(modal.device.id);setModal(null);await load()}catch(e){setModalError(e.message||"Unable to remove this device.")}finally{setBusy(false)}};
+ const columns=[{key:"deviceUid",header:"Device ID",render:r=><div className="device-name-cell"><strong>{r.deviceUid}</strong><span>{r.name}</span></div>},{key:"assignedVehicle",header:"Assigned Vehicle"},{key:"type",header:"Device Type"},{key:"connectionStatus",header:"Connection",render:r=><StatusBadge status={r.connectionStatus}/>},{key:"gpsStatus",header:"GPS",render:r=><StatusBadge status={r.gpsStatus}/>},{key:"lastSeenAt",header:"Last Connection",render:r=>formatLastSeen(r.lastSeenAt)}];
+ return <><TablePage eyebrow="Monitoring" title="IoT Devices" description="Register fleet hardware, manage vehicle assignments, and monitor connectivity." searchPlaceholder="Search device, vehicle, type, or status..." rows={devices} columns={columns} filterKeys={["deviceUid","name","assignedVehicle","type","connectionStatus","gpsStatus"]} loading={loading} error={error} onRetry={load} actions={<Button onClick={()=>{setModalError("");setModal({mode:"create",device:null})}}>Add IoT device</Button>} onRowClick={device=>{setModalError("");setModal({mode:"view",device})}} rowLabel={device=>`View details for ${device.name}`} emptyTitle="No IoT devices registered" emptyDescription="Add the first device to begin tracking fleet hardware."/>{modal&&<DeviceModal mode={modal.mode} device={modal.device} vehicles={vehicles} busy={busy} error={modalError} onClose={()=>setModal(null)} onSave={save} onEdit={()=>setModal(current=>({...current,mode:"edit"}))} onRemove={remove}/>}</>
+}

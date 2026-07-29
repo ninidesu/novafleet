@@ -105,5 +105,5 @@ app.post("/api/employees", (req, res) => {
 });
 
 app.listen(PORT, () => {
-  console.log(`MicroFin OS API listening on http://localhost:${PORT}`);
+  console.log(`NovaFleet API listening on http://localhost:${PORT}`);
 });

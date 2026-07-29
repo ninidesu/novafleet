@@ -1,0 +1,17 @@
+import { useCallback, useEffect, useState } from "react";
+import Button from "../components/Button.jsx";
+import StatusBadge from "../components/StatusBadge.jsx";
+import VehicleModal from "../components/vehicles/VehicleModal.jsx";
+import { changeVehicleStatus, createVehicle, listVehicleDrivers, listVehicles, removeVehicle, subscribeToVehicles, updateVehicle } from "../services/vehicleService.js";
+import TablePage from "./TablePage.jsx";
+
+export default function Vehicles(){
+ const[vehicles,setVehicles]=useState([]),[drivers,setDrivers]=useState([]),[loading,setLoading]=useState(true),[error,setError]=useState(""),[modalError,setModalError]=useState(""),[modal,setModal]=useState(null),[busy,setBusy]=useState(false);
+ const load=useCallback(async()=>{setLoading(true);setError("");try{const[vehicleRows,driverRows]=await Promise.all([listVehicles(),listVehicleDrivers()]);setVehicles(vehicleRows);setDrivers(driverRows)}catch(e){setError(e.message||"Unable to retrieve vehicles.")}finally{setLoading(false)}},[]);
+ useEffect(()=>{load();return subscribeToVehicles(load)},[load]);
+ const save=async(values)=>{setBusy(true);setModalError("");try{if(modal.mode==="edit")await updateVehicle(modal.vehicle.id,values);else await createVehicle(values);setModal(null);await load()}catch(e){setModalError(e.message||"Unable to save this vehicle.")}finally{setBusy(false)}};
+ const deactivate=async()=>{if(!window.confirm(`Set ${modal.vehicle.plateNumber} to Inactive? It will remain available in operational history.`))return;setBusy(true);setModalError("");try{await changeVehicleStatus(modal.vehicle.id,"Inactive");setModal(null);await load()}catch(e){setModalError(e.message||"Unable to update this vehicle.")}finally{setBusy(false)}};
+ const remove=async()=>{if(!window.confirm(`Permanently remove ${modal.vehicle.plateNumber}? Use Inactive instead if this vehicle has operational history.`))return;setBusy(true);setModalError("");try{await removeVehicle(modal.vehicle.id);setModal(null);await load()}catch(e){setModalError(e.message||"Unable to remove this vehicle.")}finally{setBusy(false)}};
+ const columns=[{key:"plateNumber",header:"Vehicle",render:row=><div className="device-name-cell"><strong>{row.plateNumber}</strong><span>{row.model}</span></div>},{key:"status",header:"Status",render:row=><StatusBadge status={row.status}/>},{key:"vehicleType",header:"Type"},{key:"assignedDriver",header:"Assigned Driver"},{key:"odometer",header:"Odometer"},{key:"fuelCapacity",header:"Fuel Capacity"}];
+ return <><TablePage eyebrow="Fleet Operations" title="Vehicles" description="Manage fleet inventory, availability, driver assignments, and operating details." searchPlaceholder="Search plate, model, type, driver, or status..." rows={vehicles} columns={columns} filterKeys={["plateNumber","model","vehicleType","assignedDriver","status"]} loading={loading} error={error} onRetry={load} actions={<Button onClick={()=>{setModalError("");setModal({mode:"create",vehicle:null})}}>Add vehicle</Button>} onRowClick={vehicle=>{setModalError("");setModal({mode:"view",vehicle})}} rowLabel={vehicle=>`View details for vehicle ${vehicle.plateNumber}`} emptyTitle="No vehicles registered" emptyDescription="Add the first vehicle to begin configuring fleet operations."/>{modal&&<VehicleModal mode={modal.mode} vehicle={modal.vehicle} drivers={drivers} busy={busy} error={modalError} onClose={()=>setModal(null)} onSave={save} onEdit={()=>setModal(current=>({...current,mode:"edit"}))} onDeactivate={deactivate} onRemove={remove}/>}</>
+}
