@@ -39,7 +39,10 @@ export default function Topbar({user,onMenu,searchQuery,onSearchChange}){
  const navigate=useNavigate();
  const inputRef=useRef(null);
  const [focused,setFocused]=useState(false);
- const context=pageContext(pathname);
+ const context=pageContext(pathname); const displayName = user?.name?.trim() || "User";
+ const roleLabel = user?.roleLabel?.trim() || "Account";
+ const derivedInitials = displayName.split(/\s+/).filter(Boolean).map((part, index, parts) => index === 0 || index === parts.length - 1 ? part[0] : "").join("").replace(/[^a-z]/gi, "").slice(0, 2).toUpperCase() || "U";
+ const initials = user?.initials?.trim().slice(0, 2).toUpperCase() || derivedInitials;
  const statusLabel=user?.role==="dispatcher"?"Live operations":"Systems operational";
  const suggestions=useMemo(()=>{
   const term=searchQuery.trim().toLowerCase();
@@ -66,7 +69,7 @@ export default function Topbar({user,onMenu,searchQuery,onSearchChange}){
     <div className="topbar-search"><SearchIcon/><Input ref={inputRef} id="global-search" placeholder={`Search ${context.title.toLowerCase()}`} aria-label={`Search ${context.title}`} value={searchQuery} onChange={(event)=>onSearchChange(event.target.value)} onFocus={()=>setFocused(true)} onBlur={()=>window.setTimeout(()=>setFocused(false),120)}/>{searchQuery?<button className="topbar-search-clear" type="button" onClick={()=>onSearchChange("")} aria-label="Clear search">{"\u00D7"}</button>:<kbd>/</kbd>}</div>
     {focused&&suggestions.length>0&&<div className="topbar-search-results" role="listbox" aria-label="Matching modules">{suggestions.map(section=><button type="button" role="option" key={section.prefix} onMouseDown={(event)=>event.preventDefault()} onClick={()=>openSection(section.prefix)}><span>{section.title}</span><small>{section.category}</small></button>)}</div>}
    </form>
-   <LiveClock/><NotificationMenu/><div className="topbar-divider" aria-hidden="true"/><button className="topbar-user" type="button" onClick={() => navigate("/settings")} aria-label={`Open settings for ${user?.name}`}><div className="topbar-avatar" aria-hidden="true">{user?.initials}</div><div className="topbar-user-copy"><strong>{user?.name}</strong><span>{user?.roleLabel}</span></div></button>
+   <LiveClock/><NotificationMenu/><div className="topbar-divider" aria-hidden="true"/><button className="topbar-user" type="button" onClick={() => navigate("/settings")} aria-label={`Open settings for ${displayName}`} title={`Open settings for ${displayName}`}><div className="topbar-avatar" aria-hidden="true">{initials}</div><div className="topbar-user-copy"><strong title={displayName}>{displayName}</strong><span title={roleLabel}>{roleLabel}</span></div></button>
   </div>
  </header>;
 }

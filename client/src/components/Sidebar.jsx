@@ -45,17 +45,18 @@ export default function Sidebar({ open, onClose, user, onLogout }) {
         </div>
       </div>
       <div className="sidebar-rule" />
-      <nav className="sidebar-nav">
+      <nav className="sidebar-nav" aria-label="Fleet workspace navigation">
         {navigationGroups.map((group) => (
           <section className="nav-group" key={group.label} aria-labelledby={`nav-${group.label.replace(/\s+/g, "-").toLowerCase()}`}>
             <div className="nav-section" id={`nav-${group.label.replace(/\s+/g, "-").toLowerCase()}`}>{group.label}</div>
-            {group.items.map((item) => (
-              <NavLink key={item.path} to={item.path} className="nav-link" onClick={onClose}>
+            <ul className="sidebar-nav-list">{group.items.map((item) => (
+              <NavLink key={item.path} to={item.path} end={item.path === "/dashboard"} className={({ isActive }) => `nav-link${isActive ? " active" : ""}`} onClick={onClose} title={item.label}>
                 <NavIcon name={item.icon} />
                 <span>{item.label}</span>
                 <span className="nav-active-mark" aria-hidden="true" />
               </NavLink>
             ))}
+            </ul>
           </section>
         ))}
       </nav>

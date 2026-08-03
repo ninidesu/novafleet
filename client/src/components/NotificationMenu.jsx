@@ -1,8 +1,11 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { useNavigate } from "react-router-dom";
+import InlineError from "./InlineError.jsx";
 import { getFleetNotifications, subscribeToFleetNotifications } from "../services/notificationService.js";
 
 const READ_KEY = "novafleet-read-notifications";
+const POPOVER_ID = "fleet-notifications-popover";
+
 function BellIcon(){return <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M18 8a6 6 0 0 0-12 0c0 7-3 7-3 9h18c0-2-3-2-3-9Z"/><path d="M10 21h4"/></svg>}
 function relativeTime(value) {
   const seconds = Math.max(0, Math.floor((Date.now() - new Date(value).getTime()) / 1000));
@@ -18,42 +21,93 @@ function storedReadIds() {
 export default function NotificationMenu() {
   const navigate = useNavigate();
   const rootRef = useRef(null);
+  const triggerRef = useRef(null);
+  const popoverRef = useRef(null);
+  const loadingRef = useRef(false);
+  const markingAllRef = useRef(false);
   const [open, setOpen] = useState(false);
   const [notifications, setNotifications] = useState([]);
   const [readIds, setReadIds] = useState(storedReadIds);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
+  const [markingAll, setMarkingAll] = useState(false);
+  const unreadCount = useMemo(() => notifications.filter((item) => !readIds.has(item.id)).length, [notifications, readIds]);
 
   const load = useCallback(async () => {
+    if (loadingRef.current) return;
+    loadingRef.current = true;
+    setLoading(true);
     try { setNotifications(await getFleetNotifications()); setError(""); }
     catch (loadError) { setError(loadError.message || "Notifications unavailable."); }
-    finally { setLoading(false); }
+    finally { loadingRef.current = false; setLoading(false); }
   }, []);
 
   useEffect(() => { load(); return subscribeToFleetNotifications(load); }, [load]);
-  useEffect(() => {
-    const close = (event) => { if (!rootRef.current?.contains(event.target)) setOpen(false); };
-    const escape = (event) => { if (event.key === "Escape") setOpen(false); };
-    document.addEventListener("mousedown", close);
-    document.addEventListener("keydown", escape);
-    return () => { document.removeEventListener("mousedown", close); document.removeEventListener("keydown", escape); };
+
+  const closeMenu = useCallback((restoreFocus = true) => {
+    setOpen(false);
+    if (restoreFocus) requestAnimationFrame(() => triggerRef.current?.focus());
   }, []);
 
-  const unreadCount = useMemo(() => notifications.filter((item) => !readIds.has(item.id)).length, [notifications, readIds]);
-  const saveReadIds = (next) => { setReadIds(next); localStorage.setItem(READ_KEY, JSON.stringify([...next])); };
-  const markAllRead = () => saveReadIds(new Set([...readIds, ...notifications.map((item) => item.id)]));
-  const openNotification = (item) => { saveReadIds(new Set([...readIds, item.id])); setOpen(false); navigate("/live-fleet"); };
+  useEffect(() => {
+    if (!open) return undefined;
+    const closeOnOutsidePointer = (event) => {
+      if (!rootRef.current?.contains(event.target)) closeMenu();
+    };
+    const closeOnEscape = (event) => {
+      if (event.key === "Escape") { event.preventDefault(); closeMenu(); }
+    };
+    document.addEventListener("pointerdown", closeOnOutsidePointer);
+    document.addEventListener("keydown", closeOnEscape);
+    return () => {
+      document.removeEventListener("pointerdown", closeOnOutsidePointer);
+      document.removeEventListener("keydown", closeOnEscape);
+    };
+  }, [closeMenu, open]);
+
+  useEffect(() => {
+    if (!open) return;
+    const focusTarget = popoverRef.current?.querySelector("[data-notification-primary], [data-mark-all]") || popoverRef.current;
+    requestAnimationFrame(() => focusTarget?.focus());
+  }, [open]);
+
+  const saveReadIds = (next) => {
+    setReadIds(next);
+    localStorage.setItem(READ_KEY, JSON.stringify([...next]));
+  };
+  const markRead = (id) => saveReadIds(new Set([...readIds, id]));
+  const markAllRead = () => {
+    if (!unreadCount || markingAllRef.current) return;
+    markingAllRef.current = true;
+    setMarkingAll(true);
+    saveReadIds(new Set([...readIds, ...notifications.map((item) => item.id)]));
+    requestAnimationFrame(() => { markingAllRef.current = false; setMarkingAll(false); });
+  };
+  const openNotification = (item) => {
+    markRead(item.id);
+    closeMenu(false);
+    navigate("/live-fleet");
+  };
+  const toggleMenu = () => { if (open) closeMenu(false); else setOpen(true); };
 
   return <div className="notification-menu" ref={rootRef}>
-    <button className={`topbar-icon-button ${open ? "active" : ""}`} type="button" aria-label={`Notifications, ${unreadCount} unread`} aria-expanded={open} aria-haspopup="dialog" onClick={() => setOpen((value) => !value)}>
-      <BellIcon/>{unreadCount > 0 && <span className="topbar-alert-dot">{unreadCount > 99 ? "99+" : unreadCount}</span>}
+    <button ref={triggerRef} className={`topbar-icon-button ${open ? "active" : ""}`} type="button" aria-label={unreadCount ? `Notifications, ${unreadCount} unread` : "Notifications"} aria-expanded={open} aria-controls={POPOVER_ID} aria-haspopup="dialog" onClick={toggleMenu}>
+      <BellIcon/>{unreadCount > 0 && <span className="topbar-alert-dot" aria-hidden="true">{unreadCount > 99 ? "99+" : unreadCount}</span>}
     </button>
-    {open && <section className="notification-popover" role="dialog" aria-label="Fleet notifications">
-      <header><div><strong>Notifications</strong><span>{unreadCount ? `${unreadCount} unread` : "You are all caught up"}</span></div>{unreadCount > 0 && <button type="button" onClick={markAllRead}>Mark all read</button>}</header>
-      <div className="notification-list app-scroll" aria-live="polite">
-        {loading ? <div className="notification-state">Loading notifications…</div> : error ? <div className="notification-state error">{error}<button type="button" onClick={load}>Try again</button></div> : notifications.length ? notifications.map((item) => <button type="button" className={`notification-item ${readIds.has(item.id) ? "read" : "unread"}`} key={item.id} onClick={() => openNotification(item)}><i aria-hidden="true"/><div><strong>{item.title}</strong><span>{item.vehicle} · {relativeTime(item.timestamp)}</span><small>{item.acknowledged ? "Incident acknowledged" : "Requires review"}</small></div></button>) : <div className="notification-state">No incident notifications yet.</div>}
+    {open && <section ref={popoverRef} id={POPOVER_ID} className="notification-popover" role="dialog" aria-modal="false" aria-labelledby={`${POPOVER_ID}-title`} tabIndex="-1">
+      <header><div><strong id={`${POPOVER_ID}-title`}>Notifications</strong><span>{unreadCount ? `${unreadCount} unread` : "You are all caught up"}</span></div>{unreadCount > 0 && <button type="button" data-mark-all onClick={markAllRead} disabled={markingAll}>{markingAll ? "Marking read..." : "Mark all read"}</button>}</header>
+      <div className="notification-list app-scroll" aria-live="polite" aria-busy={loading}>
+        {loading ? <div className="notification-state" role="status">Loading notifications...</div> : error ? <InlineError variant="compact" title="Unable to load notifications" message="Please try again." onRetry={load} retrying={loading} /> : notifications.length ? <ul className="notification-items">{notifications.map((item) => {
+          const isRead = readIds.has(item.id);
+          return <li className={`notification-entry ${isRead ? "read" : "unread"}`} key={item.id}>
+            <button type="button" className="notification-item" data-notification-primary onClick={() => openNotification(item)} aria-label={`${item.title}, ${item.vehicle}, ${relativeTime(item.timestamp)}${isRead ? ", read" : ", unread"}`}>
+              <i aria-hidden="true"/><div><strong>{item.title}</strong><span>{item.vehicle} - {relativeTime(item.timestamp)}</span><small>{isRead ? "Read" : item.acknowledged ? "Incident acknowledged - Unread" : "Requires review - Unread"}</small></div>
+            </button>
+            {!isRead && <button type="button" className="notification-mark-read" onClick={() => markRead(item.id)} aria-label={`Mark ${item.title} for ${item.vehicle} as read`}>Mark read</button>}
+          </li>;
+        })}</ul> : <div className="notification-state" role="status"><strong>No notifications</strong><span>You are all caught up.</span></div>}
       </div>
-      <footer><button type="button" onClick={() => { setOpen(false); navigate("/risk-monitoring"); }}>Open risk monitoring</button></footer>
+      <footer><button type="button" onClick={() => { closeMenu(false); navigate("/risk-monitoring"); }}>Open risk monitoring</button></footer>
     </section>}
   </div>;
 }

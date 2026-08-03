@@ -5,6 +5,7 @@ import Card from "../components/Card.jsx";
 import DataTable from "../components/DataTable.jsx";
 import EmptyState from "../components/EmptyState.jsx";
 import Input from "../components/Input.jsx";
+import InlineError from "../components/InlineError.jsx";
 import LoadingState from "../components/LoadingState.jsx";
 import PageHeader from "../components/PageHeader.jsx";
 
@@ -22,7 +23,7 @@ export default function TablePage({ eyebrow, title, description, searchPlacehold
       <PageHeader eyebrow={eyebrow} title={title} description={description} actions={actions} />
       <Card>
         {loading ? <LoadingState title={`Loading ${title.toLowerCase()}`} description="Retrieving current records from Supabase." /> : error ? (
-          <div className="resource-error" role="alert"><EmptyState title={`Unable to load ${title.toLowerCase()}`} description={error} />{onRetry && <Button onClick={onRetry}>Try again</Button>}</div>
+          <div className="resource-error"><InlineError title={`Unable to load ${title.toLowerCase()}`} message={error} onRetry={onRetry} /></div>
         ) : <>
           <div className="table-toolbar">
             <Input id={`${title.toLowerCase().replaceAll(" ", "-")}-search`} placeholder={searchPlaceholder} value={query} onChange={(event) => setQuery(event.target.value)} aria-label={`Search ${title}`} />
