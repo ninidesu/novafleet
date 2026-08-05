@@ -808,7 +808,7 @@ html[data-theme="dark"] .report-tabs button.active span {
   background: var(--panel);
 }
 .table-pagination p { margin: 0; color: var(--muted); font-size: calc(12px * var(--text-scale)); white-space: nowrap; }
-.table-pagination p strong { color: var(--text); font-weight: 750; }
+.table-pagination p strong { color: var(--text); font-weight: 400; }
 .table-pagination-controls { display: flex; align-items: center; justify-content: flex-end; gap: 6px; }
 .table-pagination-controls button {
   min-width: 38px;
@@ -820,7 +820,7 @@ html[data-theme="dark"] .report-tabs button.active span {
   color: var(--text);
   font: inherit;
   font-size: calc(12px * var(--text-scale));
-  font-weight: 700;
+  font-weight: 400;
   cursor: pointer;
   transition: background-color .18s ease, border-color .18s ease, color .18s ease;
 }
@@ -2163,7 +2163,7 @@ html[data-theme="dark"] .password-toggle-button:hover {
 .page-shell { overscroll-behavior: contain; }
 
 /* Sidebar refinement (Phase 1.2B). */
-.sidebar-nav{min-width:0;overflow-y:auto}.sidebar-nav-list{display:grid;gap:2px;margin:0;padding:0;list-style:none}.nav-link{min-width:0}.nav-link span:not(.nav-active-mark){min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}.nav-link:focus-visible{outline:2px solid #93C5FD;outline-offset:2px}.sidebar-footer{min-width:0}.sidebar-session{overflow:hidden;text-overflow:ellipsis;white-space:nowrap}@media(max-width:900px){.sidebar{max-width:calc(100vw - 24px)}}
+.sidebar-nav{min-width:0;overflow-y:auto;scrollbar-width:none;-ms-overflow-style:none}.sidebar-nav::-webkit-scrollbar{display:none}.sidebar-nav-list{display:grid;gap:2px;margin:0;padding:0;list-style:none}.nav-link{min-width:0}.nav-link span:not(.nav-active-mark){min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}.nav-link:focus-visible{outline:2px solid #93C5FD;outline-offset:2px}.sidebar-footer{min-width:0}.sidebar-session{overflow:hidden;text-overflow:ellipsis;white-space:nowrap}@media(max-width:900px){.sidebar{max-width:calc(100vw - 24px)}}
 
 /* Topbar profile resilience (Phase 1.2C2). */
 .topbar-user{min-width:0;max-width:min(250px,22vw)}.topbar-user-copy{min-width:0;max-width:190px}.topbar-user-copy strong,.topbar-user-copy span{overflow:hidden;text-overflow:ellipsis;white-space:nowrap}

@@ -19,7 +19,11 @@ import { listVehicles } from "../services/vehicleService.js";
 const DRIVER_STATUSES = ["Active", "Inactive", "On Leave", "Suspended"];
 const readableValue = (value) => value && value !== "Not recorded" ? value : "—";
 const date = (value) => value ? new Intl.DateTimeFormat(undefined, { dateStyle: "medium" }).format(new Date(value)) : "—";
-const mutationErrorMessage = (error, fallback) => error?.message === "That license number is already registered." ? error.message : fallback;
+const mutationErrorMessage = (error, fallback) => {
+  if (error?.message === "That license number is already registered.") return error.message;
+  if (error?.code === "42501" || /row-level security/i.test(error?.message || "")) return "Your account is not permitted to manage drivers. Apply the fleet RLS migration, then sign out and sign back in.";
+  return error?.message || fallback;
+};
 
 export default function Drivers() {
   const { role } = useAuth();
@@ -122,8 +126,8 @@ export default function Drivers() {
       await load({ quiet: true });
       setAssignmentOpen(false);
       toast.success(`${driver.name} was assigned to ${vehicle.plateNumber}.`);
-    } catch {
-      const message = "We couldn't complete this assignment. Refresh the records and try again.";
+    } catch (assignmentFailure) {
+      const message = assignmentFailure?.message || "We couldn't complete this assignment. Refresh the records and try again.";
       setAssignmentError(message);
       toast.error(message);
     } finally { setAssignmentBusy(false); }
@@ -139,8 +143,8 @@ export default function Drivers() {
       await load({ quiet: true });
       setAssignmentOpen(false);
       toast.success(`${driver.name} was unassigned from ${vehicle.plateNumber}.`);
-    } catch {
-      const message = "We couldn't remove this assignment. Please try again.";
+    } catch (assignmentFailure) {
+      const message = assignmentFailure?.message || "We couldn't remove this assignment. Please try again.";
       setAssignmentError(message);
       toast.error(message);
     } finally { setAssignmentBusy(false); }

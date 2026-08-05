@@ -4,7 +4,7 @@ import Input from "../Input.jsx";
 import Select from "../Select.jsx";
 import StatusBadge from "../StatusBadge.jsx";
 
-const blankDevice={deviceUid:"",name:"",type:"GPS Tracker",serialNumber:"",firmwareVersion:"",connectionStatus:"Offline",gpsStatus:"No GPS",installedAt:"",vehicleId:"",notes:""};
+const blankDevice={deviceUid:"",name:"",type:"GPS Tracker",serialNumber:"",firmwareVersion:"",connectionStatus:"Offline",gpsStatus:"No GPS",installedAt:"",vehicleId:"",latitude:"",longitude:"",notes:""};
 const formatDate=(value)=>value?new Intl.DateTimeFormat(undefined,{dateStyle:"medium",timeStyle:"short"}).format(new Date(value)):"Never";
 export default function DeviceModal({mode,device,vehicles,busy,error,onClose,onSave,onEdit,onRemove}){
  const editing=mode==="create"||mode==="edit"; const[values,setValues]=useState(blankDevice); const[errors,setErrors]=useState({});
@@ -25,6 +25,7 @@ export default function DeviceModal({mode,device,vehicles,busy,error,onClose,onS
    <Select id="device-connection" label="Connection status" value={values.connectionStatus} onChange={setField("connectionStatus")} disabled={busy}><option>Online</option><option>Offline</option><option>Maintenance</option></Select>
    <Select id="device-gps" label="GPS status" value={values.gpsStatus} onChange={setField("gpsStatus")} disabled={busy}><option>Active</option><option>No GPS</option><option>Disabled</option></Select>
    <Input id="device-installed" label="Installed date" type="date" value={values.installedAt||""} onChange={setField("installedAt")} disabled={busy}/>
+   <Input id="device-latitude" label="Latitude" type="number" step="any" min="-90" max="90" value={values.latitude} onChange={setField("latitude")} disabled={busy}/><Input id="device-longitude" label="Longitude" type="number" step="any" min="-180" max="180" value={values.longitude} onChange={setField("longitude")} disabled={busy}/>
    <label className="input-wrap device-notes" htmlFor="device-notes"><span className="input-label">Notes</span><textarea id="device-notes" className="input" rows="3" value={values.notes} onChange={setField("notes")} disabled={busy}/></label>
   </div><div className="device-modal-actions"><Button type="button" variant="secondary" onClick={onClose} disabled={busy}>Cancel</Button><Button type="submit" disabled={busy}>{busy?"Saving...":mode==="create"?"Add device":"Save changes"}</Button></div></form>:<>
    <div className="device-detail-hero"><div><strong>{device.deviceUid}</strong><span>{device.type}</span></div><StatusBadge status={device.connectionStatus}/></div>
