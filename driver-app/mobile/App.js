@@ -16,6 +16,7 @@ import {
 
 import { ThemeProvider, useTheme } from './src/theme/ThemeContext';
 import { AppStateProvider } from './src/state/AppStateContext';
+import { AuthProvider } from './src/context/AuthContext';
 import RootNavigator from './src/navigation/RootNavigator';
 import ToastHost from './src/components/ToastHost';
 
@@ -47,9 +48,11 @@ export default function App() {
   return (
     <SafeAreaProvider>
       <ThemeProvider>
-        <AppStateProvider>
-          <AppShell />
-        </AppStateProvider>
+        <AuthProvider>
+          <AppStateProvider>
+            <AppShell />
+          </AppStateProvider>
+        </AuthProvider>
       </ThemeProvider>
     </SafeAreaProvider>
   );

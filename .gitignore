@@ -2,7 +2,14 @@ node_modules/
 dist/
 .DS_Store
 *.log
+.env
 .env.local
 .env.*.local
+!.env.example
 .claude/
 .expo/
+
+# Python (ml-worker)
+.venv/
+__pycache__/
+*.pyc

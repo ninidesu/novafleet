@@ -195,7 +195,7 @@ function RoutePreviewMap({ from, destination, route, routeLoading, routeError, s
       </div>
       <div className="trip-route-picker-map">
         <MapContainer center={center} zoom={from || destination ? 13 : 6} scrollWheelZoom>
-          <TileLayer attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a>' url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png" />
+          <TileLayer attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> &copy; <a href="https://carto.com/attributions">CARTO</a>' url="https://{s}.basemaps.cartocdn.com/rastertiles/voyager/{z}/{x}/{y}{r}.png" maxZoom={20} />
           <RoutePreviewController from={from} destination={destination} />
           <RoutePinClickHandler onPin={onPin} />
           {from && <Marker position={from} icon={createRoutePin("F", "#64748b")}><Tooltip direction="top">From</Tooltip></Marker>}

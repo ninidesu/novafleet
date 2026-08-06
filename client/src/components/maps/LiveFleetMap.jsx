@@ -84,7 +84,7 @@ export default function LiveFleetMap({ vehicles, selectedVehicleId, onSelectVehi
         {vehicleList}
         <div className="live-fleet-map" aria-label="Interactive Metro Manila fleet map">
           <MapContainer center={METRO_MANILA_CENTER} zoom={12} scrollWheelZoom>
-            <TileLayer attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors' url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png" />
+            <TileLayer attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> &copy; <a href="https://carto.com/attributions">CARTO</a>' url="https://{s}.basemaps.cartocdn.com/rastertiles/voyager/{z}/{x}/{y}{r}.png" maxZoom={20} />
             <MapController vehicles={vehicles} selectedVehicle={selectedVehicle} fitRequest={fitRequest} centerRequest={centerRequest} followVehicle={followVehicle} />
             {routeLayers.map((layer) => <Polyline key={layer.id} positions={layer.positions} pathOptions={layer.style} />)}
             {vehicles.map((vehicle) => (

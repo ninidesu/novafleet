@@ -1,4 +1,4 @@
-﻿import { supabase } from "./supabase.js";
+﻿import { api } from "./api.js";
 
 let state={status:"idle",tripId:null,current:0,total:0,error:""};
 let timer=null;let configuration=null;const listeners=new Set();
@@ -12,8 +12,9 @@ function createRoute(start,destination,total=18){
 async function writeNext(){
  if(!configuration||state.status!=="running")return;
  const point=configuration.route[state.current];
- const{error}=await supabase.from("sensor_readings").insert({trip_id:configuration.tripId,recorded_at:new Date().toISOString(),lat:point[0],lng:point[1],speed_kmh:configuration.speed,source:"simulator"});
- if(error){clearInterval(timer);timer=null;state={...state,status:"error",error:error.message};publish();return}
+ try{
+  await api.post(`/trips/${configuration.tripId}/sensor-readings`,{recorded_at:new Date().toISOString(),lat:point[0],lng:point[1],speed_kmh:configuration.speed,source:"simulator"});
+ }catch(error){clearInterval(timer);timer=null;state={...state,status:"error",error:error.message};publish();return}
  state={...state,current:state.current+1};publish();
  if(state.current>=state.total){clearInterval(timer);timer=null;state={...state,status:"completed"};publish()}
 }

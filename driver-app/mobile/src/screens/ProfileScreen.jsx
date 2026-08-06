@@ -56,9 +56,9 @@ const FLAG_TOGGLES = [
   ['assignEmpty', 'No trips (Assignments)'],
 ];
 
-export default function ProfileScreen({ navigation }) {
+export default function ProfileScreen() {
   const { colors, isDark, toggleTheme } = useTheme();
-  const { driver, flags, toggleFlag } = useAppState();
+  const { driver, flags, toggleFlag, logout } = useAppState();
   const [devOpen, setDevOpen] = useState(false);
 
   return (
@@ -71,7 +71,7 @@ export default function ProfileScreen({ navigation }) {
               {driver.name}
             </BodyText>
             <Muted>
-              {driver.id} · {driver.branch}
+              {driver.status} · {driver.branch}
             </Muted>
           </View>
         </Row>
@@ -143,7 +143,7 @@ export default function ProfileScreen({ navigation }) {
         label="Sign out"
         variant="outlineDanger"
         icon={<Icon name="logout" size={16} color={colors.danger} />}
-        onPress={() => navigation.reset({ index: 0, routes: [{ name: 'Login' }] })}
+        onPress={logout}
       />
 
       <Card padding="sm" style={{ borderStyle: 'dashed' }}>

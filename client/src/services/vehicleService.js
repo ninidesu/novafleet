@@ -1,14 +1,29 @@
-import { supabase } from "./supabase.js";
+import { api, pollingSubscription } from "./api.js";
 
-const VEHICLE_SELECT="id,plate_number,vehicle_type,model,status,assigned_driver_id,fuel_capacity_liters,odometer_km,created_at,assigned_driver:drivers!vehicles_assigned_driver_id_fkey(id,full_name)";
-const titleCase=(value,fallback="Not specified")=>value?String(value).replace(/[_-]+/g," ").replace(/\b\w/g,letter=>letter.toUpperCase()):fallback;
-function mapVehicle(row){return{id:row.id,plateNumber:row.plate_number,vehicleType:titleCase(row.vehicle_type),model:row.model||"Not specified",status:titleCase(row.status,"Inactive"),assignedDriverId:row.assigned_driver_id||"",assignedDriver:row.assigned_driver?.full_name||"Unassigned",fuelCapacityValue:row.fuel_capacity_liters??"",fuelCapacity:row.fuel_capacity_liters==null?"Not recorded":`${Number(row.fuel_capacity_liters).toLocaleString()} L`,odometerValue:row.odometer_km??"",odometer:row.odometer_km==null?"Not recorded":`${Number(row.odometer_km).toLocaleString()} km`,createdAt:row.created_at}}
-function payload(values){const data={plate_number:values.plateNumber.trim().toUpperCase(),vehicle_type:values.vehicleType.trim(),model:values.model.trim(),status:values.status.toLowerCase().replaceAll(" ","_"),fuel_capacity_liters:values.fuelCapacity===""?null:Number(values.fuelCapacity),odometer_km:values.odometer===""?null:Number(values.odometer)};if(Object.hasOwn(values,"assignedDriverId"))data.assigned_driver_id=values.assignedDriverId||null;return data}
-function check(error){if(!error)return;if(error.code==="23505")throw new Error("That plate number is already registered.");if(error.code==="23503")throw new Error("This vehicle has related operational records and cannot be removed. Set its status to Inactive instead.");throw error}
-export async function listVehicles(){const{data,error}=await supabase.from("vehicles").select(VEHICLE_SELECT).order("plate_number");check(error);return(data||[]).map(mapVehicle)}
-export async function listVehicleDrivers(){const{data,error}=await supabase.from("drivers").select("id,full_name,status").order("full_name");check(error);return data||[]}
-export async function createVehicle(values){const{data,error}=await supabase.from("vehicles").insert(payload(values)).select(VEHICLE_SELECT).single();check(error);return mapVehicle(data)}
-export async function updateVehicle(id,values){const{data,error}=await supabase.from("vehicles").update(payload(values)).eq("id",id).select(VEHICLE_SELECT).single();check(error);return mapVehicle(data)}
-export async function changeVehicleStatus(id,status){const{data,error}=await supabase.from("vehicles").update({status:status.toLowerCase().replaceAll(" ","_")}).eq("id",id).select(VEHICLE_SELECT).single();check(error);return mapVehicle(data)}
-export async function removeVehicle(id){const{error}=await supabase.from("vehicles").delete().eq("id",id);check(error)}
-export function subscribeToVehicles(onChange){const channel=supabase.channel("admin-vehicles").on("postgres_changes",{event:"*",schema:"fleet",table:"vehicles"},onChange).subscribe();return()=>supabase.removeChannel(channel)}
+export function listVehicles() {
+  return api.get("/vehicles");
+}
+
+export function listVehicleDrivers() {
+  return api.get("/vehicles/drivers");
+}
+
+export function createVehicle(values) {
+  return api.post("/vehicles", values);
+}
+
+export function updateVehicle(id, values) {
+  return api.patch(`/vehicles/${id}`, values);
+}
+
+export function changeVehicleStatus(id, status) {
+  return api.patch(`/vehicles/${id}/status`, { status });
+}
+
+export function removeVehicle(id) {
+  return api.delete(`/vehicles/${id}`);
+}
+
+export function subscribeToVehicles(onChange) {
+  return pollingSubscription(onChange);
+}

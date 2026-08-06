@@ -1,0 +1,40 @@
+# Render Blueprint: deploys the NovaFleet API + ML worker from this repo.
+# In Render: New > Blueprint > pick this repo. Then set the `sync: false`
+# secrets in each service's Environment tab.
+services:
+  - type: web
+    name: novafleet-api
+    runtime: docker
+    dockerfilePath: ./server/Dockerfile
+    dockerContext: ./server
+    plan: free
+    healthCheckPath: /api/health
+    envVars:
+      - key: SUPABASE_URL
+        sync: false
+      - key: SUPABASE_SERVICE_ROLE_KEY
+        sync: false
+      - key: INGEST_API_KEY
+        sync: false
+      - key: CORS_ORIGIN
+        sync: false # set to your Vercel web URL, e.g. https://novafleet.vercel.app
+      - key: SUPABASE_SCHEMA
+        value: fleet
+      - key: NODE_ENV
+        value: production
+
+  - type: worker
+    name: novafleet-ml-worker
+    runtime: docker
+    dockerfilePath: ./ml-worker/Dockerfile
+    dockerContext: ./ml-worker
+    plan: free
+    envVars:
+      - key: SUPABASE_URL
+        sync: false
+      - key: SUPABASE_SERVICE_ROLE_KEY
+        sync: false
+      - key: SUPABASE_SCHEMA
+        value: fleet
+      - key: POLL_INTERVAL_SECONDS
+        value: "120"

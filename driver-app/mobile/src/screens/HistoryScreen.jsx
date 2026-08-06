@@ -1,15 +1,22 @@
 import React, { useState } from 'react';
-import { View } from 'react-native';
 import { useTheme } from '../theme/ThemeContext';
-import { TRIP_HISTORY, FUEL_RECORDS } from '../data/mockData';
+import { useAppState } from '../state/AppStateContext';
 import ScreenContainer from '../components/ScreenContainer';
-import { Stack, Row, H1, BodyText, Muted, StatusBadge } from '../components/ui';
+import { Stack, Row, H1, BodyText, Muted, StatusBadge, EmptyState } from '../components/ui';
 import SegmentedControl from '../components/SegmentedControl';
 import ExpandableRow from '../components/ExpandableRow';
+import Icon from '../theme/icons';
+
+function dateLabel(iso) {
+  if (!iso) return 'Not recorded';
+  return new Date(iso).toLocaleDateString([], { month: 'short', day: 'numeric', hour: '2-digit', minute: '2-digit' });
+}
 
 export default function HistoryScreen() {
   const { colors } = useTheme();
+  const { assignments } = useAppState();
   const [tab, setTab] = useState('Trips');
+  const trips = assignments.history || [];
 
   return (
     <ScreenContainer>
@@ -17,72 +24,32 @@ export default function HistoryScreen() {
       <SegmentedControl options={['Trips', 'Fuel records']} value={tab} onChange={setTab} />
 
       {tab === 'Trips' ? (
-        <Stack>
-          {TRIP_HISTORY.map((t, i) => (
-            <ExpandableRow
-              key={i}
-              variant="card"
-              summary={
-                <Stack gap={6}>
-                  <Row>
-                    <BodyText bold size={12.5}>
-                      {t.route}
-                    </BodyText>
-                    <StatusBadge status={t.status} />
-                  </Row>
-                  <Row>
-                    <Muted>
-                      {t.date} · {t.vehicle}
-                    </Muted>
-                    <Muted>{t.distance}</Muted>
-                  </Row>
-                </Stack>
-              }
-              body={
-                <Muted>
-                  {t.ref} · {t.tracking}
-                </Muted>
-              }
-            />
-          ))}
-        </Stack>
+        trips.length === 0 ? (
+          <EmptyState icon={<Icon name="calendar" size={20} color={colors.muted} />} title="No completed trips yet." />
+        ) : (
+          <Stack>
+            {trips.map((t) => (
+              <ExpandableRow
+                key={t.id}
+                variant="card"
+                summary={
+                  <Stack gap={6}>
+                    <Row>
+                      <BodyText bold size={12.5}>{t.route}</BodyText>
+                      <StatusBadge status={t.status} />
+                    </Row>
+                    <Row>
+                      <Muted>{dateLabel(t.endTime || t.dispatchTime)} · {t.vehicle}</Muted>
+                    </Row>
+                  </Stack>
+                }
+                body={<Muted>{t.tripCode} · {t.purpose}</Muted>}
+              />
+            ))}
+          </Stack>
+        )
       ) : (
-        <Stack>
-          {FUEL_RECORDS.map((r, i) => (
-            <ExpandableRow
-              key={i}
-              variant="card"
-              summary={
-                <Stack gap={6}>
-                  <Row>
-                    <Muted>
-                      {r.date} · {r.vehicle}
-                    </Muted>
-                    <StatusBadge status={r.status} />
-                  </Row>
-                  <Row>
-                    <BodyText bold size={12.5}>
-                      {r.liters}
-                    </BodyText>
-                    <BodyText bold size={12.5}>
-                      {r.total}
-                    </BodyText>
-                  </Row>
-                </Stack>
-              }
-              body={
-                <View>
-                  <Muted>Odometer {r.odo}</Muted>
-                  {r.status === 'Rejected' && (
-                    <BodyText size={11.5} style={{ color: colors.danger, marginTop: 4 }}>
-                      Receipt unclear. Upload again.
-                    </BodyText>
-                  )}
-                </View>
-              }
-            />
-          ))}
-        </Stack>
+        <EmptyState icon={<Icon name="droplet" size={20} color={colors.muted} />} title="Fuel history coming soon." />
       )}
     </ScreenContainer>
   );

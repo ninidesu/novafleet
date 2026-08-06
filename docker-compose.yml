@@ -1,0 +1,31 @@
+# NovaFleet local stack.
+#   docker compose up --build
+# Requires server/.env and ml-worker/.env (copy from the .env.example files).
+# Web build args come from a root .env (see .env.example) or your shell.
+services:
+  api:
+    build: ./server
+    env_file: ./server/.env
+    ports:
+      - "4000:4000"
+    restart: unless-stopped
+
+  worker:
+    build: ./ml-worker
+    env_file: ./ml-worker/.env
+    depends_on:
+      - api
+    restart: unless-stopped
+
+  web:
+    build:
+      context: ./client
+      args:
+        VITE_API_URL: ${VITE_API_URL:-http://localhost:4000/api}
+        VITE_SUPABASE_URL: ${VITE_SUPABASE_URL:-}
+        VITE_SUPABASE_PUBLISHABLE_KEY: ${VITE_SUPABASE_PUBLISHABLE_KEY:-}
+    ports:
+      - "8080:80"
+    depends_on:
+      - api
+    restart: unless-stopped

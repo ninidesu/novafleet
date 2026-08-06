@@ -9,7 +9,11 @@ create table if not exists fleet.iot_devices (
 create index if not exists iot_devices_vehicle_id_idx on fleet.iot_devices(vehicle_id);
 alter table fleet.iot_devices enable row level security;
 grant select,insert,update,delete on fleet.iot_devices to authenticated;
+drop policy if exists "Fleet administrators can view IoT devices" on fleet.iot_devices;
 create policy "Fleet administrators can view IoT devices" on fleet.iot_devices for select to authenticated using (exists(select 1 from public.profiles where id=auth.uid() and role='admin' and module='fleet'));
+drop policy if exists "Fleet administrators can add IoT devices" on fleet.iot_devices;
 create policy "Fleet administrators can add IoT devices" on fleet.iot_devices for insert to authenticated with check (exists(select 1 from public.profiles where id=auth.uid() and role='admin' and module='fleet'));
+drop policy if exists "Fleet administrators can update IoT devices" on fleet.iot_devices;
 create policy "Fleet administrators can update IoT devices" on fleet.iot_devices for update to authenticated using (exists(select 1 from public.profiles where id=auth.uid() and role='admin' and module='fleet')) with check (exists(select 1 from public.profiles where id=auth.uid() and role='admin' and module='fleet'));
+drop policy if exists "Fleet administrators can remove IoT devices" on fleet.iot_devices;
 create policy "Fleet administrators can remove IoT devices" on fleet.iot_devices for delete to authenticated using (exists(select 1 from public.profiles where id=auth.uid() and role='admin' and module='fleet'));

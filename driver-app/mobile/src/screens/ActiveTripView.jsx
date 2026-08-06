@@ -1,20 +1,38 @@
-import React from 'react';
+import React, { useEffect, useState } from 'react';
 import { View } from 'react-native';
 import { useTheme } from '../theme/ThemeContext';
-import { fontFamily, radius } from '../theme/tokens';
+import { radius } from '../theme/tokens';
 import { useAppState } from '../state/AppStateContext';
+import { driverApi } from '../services/api';
+import { openGoogleMapsNavigation } from '../lib/maps';
 import { Stack, Pill, StatusBadge } from '../components/ui';
 import { StatMini, StatGrid } from '../components/StatMini';
 import { QuickActionGrid } from '../components/QuickAction';
 import QuickAction from '../components/QuickAction';
 import { BannerStack } from '../components/Banner';
+import TripMap from '../components/TripMap';
+import Button from '../components/Button';
+import Icon from '../theme/icons';
 
 // The screen a driver sees while a trip is in progress. Rendered inline by
-// HomeScreen (the Home tab "becomes" this screen while tripActive is true),
-// matching the wireframe spec rather than being a separate stack route.
+// HomeScreen when there is an active trip.
 export default function ActiveTripView({ navigation }) {
   const { colors } = useTheme();
-  const { flags, trackingMethod, trip } = useAppState();
+  const { flags, trackingMethod, trip, assignments } = useAppState();
+
+  const activeId = trip?.id || assignments.active?.id || null;
+  const [detail, setDetail] = useState(null);
+
+  // Load the active trip's coordinates and refresh them periodically so the map
+  // follows the vehicle as new GPS readings arrive (from the ESP32 / device).
+  useEffect(() => {
+    if (!activeId) return undefined;
+    let alive = true;
+    const load = () => driverApi.trip(activeId).then((d) => { if (alive) setDetail(d); }).catch(() => {});
+    load();
+    const timer = setInterval(load, 15000);
+    return () => { alive = false; clearInterval(timer); };
+  }, [activeId]);
 
   const method = trackingMethod && trackingMethod !== 'iot' ? 'Phone GPS active' : 'IoT active';
 
@@ -28,6 +46,8 @@ export default function ActiveTripView({ navigation }) {
   if (flags.syncing) banners.push({ kind: 'info', icon: 'refresh', text: 'Syncing records…' });
   if (flags.routeDeviation) banners.push({ kind: 'danger', icon: 'route', text: 'Off route · 1.4 km' });
 
+  const destinationCoord = detail?.plannedRoute?.length ? detail.plannedRoute[detail.plannedRoute.length - 1] : null;
+
   return (
     <Stack gap={14}>
       <BannerStack banners={banners} />
@@ -36,14 +56,16 @@ export default function ActiveTripView({ navigation }) {
         <StatusBadge status="In Progress" />
       </View>
 
-      <View
-        style={{
-          height: 180,
-          borderRadius: radius.lg,
-          backgroundColor: colors.accentDim,
-          borderWidth: 1,
-          borderColor: colors.line,
-        }}
+      {detail ? (
+        <TripMap plannedRoute={detail.plannedRoute} path={detail.path} position={detail.position} height={190} />
+      ) : (
+        <View style={{ height: 190, borderRadius: radius.lg, backgroundColor: colors.accentDim, borderWidth: 1, borderColor: colors.line }} />
+      )}
+
+      <Button
+        label="Start navigation"
+        icon={<Icon name="mapPin" size={16} color="#fff" />}
+        onPress={() => openGoogleMapsNavigation({ destinationCoord, destinationText: detail?.destination })}
       />
 
       <QuickActionGrid>
@@ -54,18 +76,9 @@ export default function ActiveTripView({ navigation }) {
       </QuickActionGrid>
 
       <StatGrid>
-        <StatMini label="Elapsed" value="0:42:18" />
-        <StatMini label="Distance" value="6.4 km" />
-        <StatMini label="ETA" value="12:10" />
-      </StatGrid>
-      <StatGrid>
         <StatMini label="GPS" value={flags.gpsDisabled ? 'GPS off' : 'Good'} color={flags.gpsDisabled ? colors.danger : colors.success} />
         <StatMini label="Offline" value={flags.offlineSaving ? '3 queued' : '0'} />
-        <StatMini
-          label="Battery"
-          value={flags.lowBattery ? '14%' : '68%'}
-          color={flags.lowBattery ? colors.warning : colors.text}
-        />
+        <StatMini label="Battery" value={flags.lowBattery ? '14%' : '68%'} color={flags.lowBattery ? colors.warning : colors.text} />
       </StatGrid>
     </Stack>
   );
