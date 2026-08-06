@@ -1,6 +1,11 @@
-# Render Blueprint: deploys the NovaFleet API + ML worker from this repo.
+# Render Blueprint: deploys the NovaFleet API from this repo.
 # In Render: New > Blueprint > pick this repo. Then set the `sync: false`
-# secrets in each service's Environment tab.
+# secrets in the service's Environment tab.
+#
+# NOTE: the ML worker is NOT here — Render background workers require a paid
+# plan. On the free tier it runs instead as a scheduled GitHub Action
+# (.github/workflows/ml-worker.yml), or you can run it locally / add it back
+# here as a `type: worker` once on a paid plan.
 services:
   - type: web
     name: novafleet-api
@@ -22,19 +27,3 @@ services:
         value: fleet
       - key: NODE_ENV
         value: production
-
-  - type: worker
-    name: novafleet-ml-worker
-    runtime: docker
-    dockerfilePath: ./ml-worker/Dockerfile
-    dockerContext: ./ml-worker
-    plan: free
-    envVars:
-      - key: SUPABASE_URL
-        sync: false
-      - key: SUPABASE_SERVICE_ROLE_KEY
-        sync: false
-      - key: SUPABASE_SCHEMA
-        value: fleet
-      - key: POLL_INTERVAL_SECONDS
-        value: "120"

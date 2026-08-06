@@ -1,0 +1,28 @@
+name: ML Worker
+
+# Free replacement for a hosted worker: score trips on a schedule. Add repo
+# secrets SUPABASE_URL and SUPABASE_SERVICE_ROLE_KEY (Settings > Secrets and
+# variables > Actions). Trigger manually anytime via "Run workflow".
+on:
+  schedule:
+    - cron: "*/15 * * * *" # every 15 minutes (GitHub may delay under load)
+  workflow_dispatch:
+
+jobs:
+  score:
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: ml-worker
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - run: pip install -r requirements.txt
+      - name: Score trips
+        run: python src/main.py
+        env:
+          SUPABASE_URL: ${{ secrets.SUPABASE_URL }}
+          SUPABASE_SERVICE_ROLE_KEY: ${{ secrets.SUPABASE_SERVICE_ROLE_KEY }}
+          SUPABASE_SCHEMA: fleet

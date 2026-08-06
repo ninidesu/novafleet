@@ -14,7 +14,8 @@ How the pieces are containerized, built in CI, and deployed.
 ```
 
 - **Web** → Vercel (static)
-- **API** + **ML worker** → Render (Docker, from `render.yaml`)
+- **API** → Render (Docker, from `render.yaml`)
+- **ML worker** → scheduled GitHub Action (`.github/workflows/ml-worker.yml`) on the free tier — Render background workers need a paid plan. Move it back into `render.yaml` as a `type: worker` if you upgrade.
 - **Database + Auth** → Supabase (already hosted)
 - **Mobile** → Expo Application Services (EAS) build/OTA
 
